@@ -196,7 +196,7 @@ static void test_no_op_with_port_and_start(void) {
 }
 
 static void tcp_connect(grpc_exec_ctx *exec_ctx, const struct sockaddr *remote,
-                        socklen_t remote_len, on_connect_result *result) {
+                        grpc_socklen remote_len, on_connect_result *result) {
   gpr_timespec deadline = GRPC_TIMEOUT_SECONDS_TO_DEADLINE(10);
   int clifd = socket(remote->sa_family, SOCK_STREAM, 0);
   int nconnects_before;
@@ -282,7 +282,7 @@ static void test_connect(unsigned n) {
     GPR_ASSERT(fd >= 0);
     if (i == 0) {
       GPR_ASSERT(getsockname(fd, (struct sockaddr *)addr,
-                             (socklen_t *)&resolved_addr.len) == 0);
+                             (grpc_socklen *)&resolved_addr.len) == 0);
       GPR_ASSERT(resolved_addr.len <= sizeof(*addr));
     }
   }
@@ -291,7 +291,7 @@ static void test_connect(unsigned n) {
     GPR_ASSERT(fd >= 0);
     if (i == 0) {
       GPR_ASSERT(getsockname(fd, (struct sockaddr *)addr1,
-                             (socklen_t *)&resolved_addr1.len) == 0);
+                             (grpc_socklen *)&resolved_addr1.len) == 0);
       GPR_ASSERT(resolved_addr1.len <= sizeof(*addr1));
     }
   }
@@ -303,7 +303,7 @@ static void test_connect(unsigned n) {
     int svr_fd;
     on_connect_result_init(&result);
     tcp_connect(&exec_ctx, (struct sockaddr *)addr,
-                (socklen_t)resolved_addr.len, &result);
+                (grpc_socklen)resolved_addr.len, &result);
     GPR_ASSERT(result.server_fd >= 0);
     svr_fd = result.server_fd;
     GPR_ASSERT(grpc_tcp_server_port_fd(s, result.port_index, result.fd_index) ==
@@ -318,7 +318,7 @@ static void test_connect(unsigned n) {
 
     on_connect_result_init(&result);
     tcp_connect(&exec_ctx, (struct sockaddr *)addr1,
-                (socklen_t)resolved_addr1.len, &result);
+                (grpc_socklen)resolved_addr1.len, &result);
     GPR_ASSERT(result.server_fd >= 0);
     GPR_ASSERT(result.server_fd != svr_fd);
     GPR_ASSERT(grpc_tcp_server_port_fd(s, result.port_index, result.fd_index) ==
