@@ -31,9 +31,9 @@
  *
  */
 
-#include <grpc/support/port_platform.h>
+#include "src/core/lib/iomgr/port.h"
 
-#ifdef GPR_WINSOCK_SOCKET
+#ifdef GRPC_WINSOCK_SOCKET
 
 #include <limits.h>
 
@@ -319,6 +319,7 @@ static void win_write(grpc_exec_ctx *exec_ctx, grpc_endpoint *ep,
                             ? GRPC_ERROR_NONE
                             : GRPC_WSA_ERROR(info->wsa_error, "WSASend");
     grpc_exec_ctx_sched(exec_ctx, cb, error, NULL);
+    if (allocated) gpr_free(allocated);
     return;
   }
 
@@ -416,4 +417,4 @@ grpc_endpoint *grpc_tcp_create(grpc_winsocket *socket, char *peer_string) {
   return &tcp->base;
 }
 
-#endif /* GPR_WINSOCK_SOCKET */
+#endif /* GRPC_WINSOCK_SOCKET */

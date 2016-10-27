@@ -31,9 +31,9 @@
  *
  */
 
-#include <grpc/support/port_platform.h>
+#include "src/core/lib/iomgr/port.h"
 
-#ifdef GPR_POSIX_SOCKET
+#ifdef GRPC_POSIX_SOCKET
 
 #include "src/core/lib/iomgr/tcp_client.h"
 
@@ -71,7 +71,7 @@ typedef struct {
   grpc_closure *closure;
 } async_connect;
 
-static grpc_error *prepare_socket(const struct sockaddr *addr, int fd) {
+static grpc_error *prepare_socket(const grpc_resolved_address *addr, int fd) {
   grpc_error *err = GRPC_ERROR_NONE;
 
   GPR_ASSERT(fd >= 0);
@@ -146,61 +146,57 @@ static void on_writable(grpc_exec_ctx *exec_ctx, void *acp, grpc_error *error) {
   grpc_timer_cancel(exec_ctx, &ac->alarm);
 
   gpr_mu_lock(&ac->mu);
-  if (error == GRPC_ERROR_NONE) {
-    do {
-      so_error_size = sizeof(so_error);
-      err = getsockopt(grpc_fd_wrapped_fd(fd), SOL_SOCKET, SO_ERROR, &so_error,
-                       &so_error_size);
-    } while (err < 0 && errno == EINTR);
-    if (err < 0) {
-      error = GRPC_OS_ERROR(errno, "getsockopt");
-      goto finish;
-    } else if (so_error != 0) {
-      if (so_error == ENOBUFS) {
-        /* We will get one of these errors if we have run out of
-           memory in the kernel for the data structures allocated
-           when you connect a socket.  If this happens it is very
-           likely that if we wait a little bit then try again the
-           connection will work (since other programs or this
-           program will close their network connections and free up
-           memory).  This does _not_ indicate that there is anything
-           wrong with the server we are connecting to, this is a
-           local problem.
-
-           If you are looking at this code, then chances are that
-           your program or another program on the same computer
-           opened too many network connections.  The "easy" fix:
-           don't do that! */
-        gpr_log(GPR_ERROR, "kernel out of buffers");
-        gpr_mu_unlock(&ac->mu);
-        grpc_fd_notify_on_write(exec_ctx, fd, &ac->write_closure);
-        return;
-      } else {
-        switch (so_error) {
-          case ECONNREFUSED:
-            error = grpc_error_set_int(error, GRPC_ERROR_INT_ERRNO, errno);
-            error = grpc_error_set_str(error, GRPC_ERROR_STR_OS_ERROR,
-                                       "Connection refused");
-            break;
-          default:
-            error = GRPC_OS_ERROR(errno, "getsockopt(SO_ERROR)");
-            break;
-        }
-        goto finish;
-      }
-    } else {
-      grpc_pollset_set_del_fd(exec_ctx, ac->interested_parties, fd);
-      *ep = grpc_tcp_create(fd, GRPC_TCP_DEFAULT_READ_SLICE_SIZE, ac->addr_str);
-      fd = NULL;
-      goto finish;
-    }
-  } else {
+  if (error != GRPC_ERROR_NONE) {
     error =
         grpc_error_set_str(error, GRPC_ERROR_STR_OS_ERROR, "Timeout occurred");
     goto finish;
   }
 
-  GPR_UNREACHABLE_CODE(return );
+  do {
+    so_error_size = sizeof(so_error);
+    err = getsockopt(grpc_fd_wrapped_fd(fd), SOL_SOCKET, SO_ERROR, &so_error,
+                     &so_error_size);
+  } while (err < 0 && errno == EINTR);
+  if (err < 0) {
+    error = GRPC_OS_ERROR(errno, "getsockopt");
+    goto finish;
+  }
+
+  switch (so_error) {
+    case 0:
+      grpc_pollset_set_del_fd(exec_ctx, ac->interested_parties, fd);
+      *ep = grpc_tcp_create(fd, GRPC_TCP_DEFAULT_READ_SLICE_SIZE, ac->addr_str);
+      fd = NULL;
+      break;
+    case ENOBUFS:
+      /* We will get one of these errors if we have run out of
+         memory in the kernel for the data structures allocated
+         when you connect a socket.  If this happens it is very
+         likely that if we wait a little bit then try again the
+         connection will work (since other programs or this
+         program will close their network connections and free up
+         memory).  This does _not_ indicate that there is anything
+         wrong with the server we are connecting to, this is a
+         local problem.
+
+         If you are looking at this code, then chances are that
+         your program or another program on the same computer
+         opened too many network connections.  The "easy" fix:
+         don't do that! */
+      gpr_log(GPR_ERROR, "kernel out of buffers");
+      gpr_mu_unlock(&ac->mu);
+      grpc_fd_notify_on_write(exec_ctx, fd, &ac->write_closure);
+      return;
+    case ECONNREFUSED:
+      /* This error shouldn't happen for anything other than connect(). */
+      error = GRPC_OS_ERROR(so_error, "connect");
+      break;
+    default:
+      /* We don't really know which syscall triggered the problem here,
+         so punt by reporting getsockopt(). */
+      error = GRPC_OS_ERROR(so_error, "getsockopt(SO_ERROR)");
+      break;
+  }
 
 finish:
   if (fd != NULL) {
@@ -227,14 +223,14 @@ finish:
 static void tcp_client_connect_impl(grpc_exec_ctx *exec_ctx,
                                     grpc_closure *closure, grpc_endpoint **ep,
                                     grpc_pollset_set *interested_parties,
-                                    const struct sockaddr *addr,
-                                    size_t addr_len, gpr_timespec deadline) {
+                                    const grpc_resolved_address *addr,
+                                    gpr_timespec deadline) {
   int fd;
   grpc_dualstack_mode dsmode;
   int err;
   async_connect *ac;
-  struct sockaddr_in6 addr6_v4mapped;
-  struct sockaddr_in addr4_copy;
+  grpc_resolved_address addr6_v4mapped;
+  grpc_resolved_address addr4_copy;
   grpc_fd *fdobj;
   char *name;
   char *addr_str;
@@ -244,8 +240,7 @@ static void tcp_client_connect_impl(grpc_exec_ctx *exec_ctx,
 
   /* Use dualstack sockets where available. */
   if (grpc_sockaddr_to_v4mapped(addr, &addr6_v4mapped)) {
-    addr = (const struct sockaddr *)&addr6_v4mapped;
-    addr_len = sizeof(addr6_v4mapped);
+    addr = &addr6_v4mapped;
   }
 
   error = grpc_create_dualstack_socket(addr, SOCK_STREAM, 0, &dsmode, &fd);
@@ -256,8 +251,7 @@ static void tcp_client_connect_impl(grpc_exec_ctx *exec_ctx,
   if (dsmode == GRPC_DSMODE_IPV4) {
     /* If we got an AF_INET socket, map the address back to IPv4. */
     GPR_ASSERT(grpc_sockaddr_is_v4mapped(addr, &addr4_copy));
-    addr = (struct sockaddr *)&addr4_copy;
-    addr_len = sizeof(addr4_copy);
+    addr = &addr4_copy;
   }
   if ((error = prepare_socket(addr, fd)) != GRPC_ERROR_NONE) {
     grpc_exec_ctx_sched(exec_ctx, closure, error, NULL);
@@ -265,8 +259,9 @@ static void tcp_client_connect_impl(grpc_exec_ctx *exec_ctx,
   }
 
   do {
-    GPR_ASSERT(addr_len < ~(socklen_t)0);
-    err = connect(fd, addr, (socklen_t)addr_len);
+    GPR_ASSERT(addr->len < ~(socklen_t)0);
+    err =
+        connect(fd, (const struct sockaddr *)addr->addr, (socklen_t)addr->len);
   } while (err < 0 && errno == EINTR);
 
   addr_str = grpc_sockaddr_to_uri(addr);
@@ -321,16 +316,16 @@ done:
 // overridden by api_fuzzer.c
 void (*grpc_tcp_client_connect_impl)(
     grpc_exec_ctx *exec_ctx, grpc_closure *closure, grpc_endpoint **ep,
-    grpc_pollset_set *interested_parties, const struct sockaddr *addr,
-    size_t addr_len, gpr_timespec deadline) = tcp_client_connect_impl;
+    grpc_pollset_set *interested_parties, const grpc_resolved_address *addr,
+    gpr_timespec deadline) = tcp_client_connect_impl;
 
 void grpc_tcp_client_connect(grpc_exec_ctx *exec_ctx, grpc_closure *closure,
                              grpc_endpoint **ep,
                              grpc_pollset_set *interested_parties,
-                             const struct sockaddr *addr, size_t addr_len,
+                             const grpc_resolved_address *addr,
                              gpr_timespec deadline) {
   grpc_tcp_client_connect_impl(exec_ctx, closure, ep, interested_parties, addr,
-                               addr_len, deadline);
+                               deadline);
 }
 
 #endif
