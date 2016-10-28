@@ -134,6 +134,7 @@
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_LITTLE_ENDIAN 1
+#define GPR_INET_NTOP_SIZE socklen_t
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -160,6 +161,7 @@
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_SUPPORT_CHANNELS_FROM_FD 1
 #define GPR_LITTLE_ENDIAN 1
+#define GPR_INET_NTOP_SIZE socklen_t
 #elif defined(__linux__)
 #define GPR_POSIX_CRASH_HANDLER 1
 #define GPR_PLATFORM_STRING "linux"
@@ -187,6 +189,7 @@
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_LITTLE_ENDIAN 1
+#define GPR_INET_NTOP_SIZE socklen_t
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -231,6 +234,7 @@
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_SUPPORT_CHANNELS_FROM_FD 1
 #define GPR_LITTLE_ENDIAN 1
+#define GPR_INET_NTOP_SIZE socklen_t
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -255,6 +259,7 @@
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_SUPPORT_CHANNELS_FROM_FD 1
 #define GPR_LITTLE_ENDIAN 1
+#define GPR_INET_NTOP_SIZE socklen_t
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -284,13 +289,13 @@
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_LITTLE_ENDIAN 1
+#define GPR_INET_NTOP_SIZE socklen_t
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
 #define GPR_ARCH_32 1
 #endif /* _LP64 */
 #elif defined(__hpux)
-
 #define GPR_PLATFORM_STRING "HP-UX"
 #define GPR_HPUX 1
 #define GPR_CPU_HPUX 1
@@ -313,6 +318,7 @@
 #define GRPC_SOCKLEN_TYPE int
 #define GRPC_SOCKLEN_MAX INT_MAX
 #define GPR_ARCH_64 1
+#define GPR_INET_NTOP_SIZE size_t
 #else
 #error "Could not auto-detect platform"
 #endif
