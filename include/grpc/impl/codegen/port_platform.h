@@ -286,7 +286,7 @@
 #endif /* _LP64 */
 #elif defined(__hpux)
 #define GPR_PLATFORM_STRING "HP-UX"
-#define GPR_CPU_POSIX 1
+#define GPR_CPU_HPUX 1
 #define GPR_GCC_ATOMIC 1
 #define GPR_GCC_TLS 1
 #define GPR_POSIX_LOG 1
@@ -383,9 +383,9 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 #if defined(GPR_CPU_LINUX) + defined(GPR_CPU_POSIX) + defined(GPR_WINDOWS) + \
-        defined(GPR_CPU_IPHONE) + defined(GPR_CPU_CUSTOM) !=                 \
+        defined(GPR_CPU_IPHONE) + defined(GPR_CPU_CUSTOM) + defined(GPR_CPU_HPUX) !=                 \
     1
-#error Must define exactly one of GPR_CPU_LINUX, GPR_CPU_POSIX, GPR_WINDOWS, GPR_CPU_IPHONE, GPR_CPU_CUSTOM
+#error Must define exactly one of GPR_CPU_LINUX, GPR_CPU_POSIX, GPR_WINDOWS, GPR_CPU_IPHONE, GPR_CPU_CUSTOM, GPR_CPU_HPUX
 #endif
 
 #if defined(GPR_MSVC_TLS) + defined(GPR_GCC_TLS) + defined(GPR_PTHREAD_TLS) + \
