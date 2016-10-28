@@ -311,7 +311,7 @@
 #define GRPC_SOCKLEN_T int
 #define S_IFMT _S_IFMT
 #undef GRPC_SOCKLEN_TYPE
-#undef GRPC_SOCKLEN_TYPE_MAX
+#undef GRPC_SOCKLEN_MAX
 #define GRPC_SOCKLEN_TYPE int
 #define GRPC_SOCKLEN_MAX INT_MAX
 #ifdef _LP64
