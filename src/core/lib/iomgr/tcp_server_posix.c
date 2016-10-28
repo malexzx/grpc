@@ -71,7 +71,7 @@
 
 #define MIN_SAFE_ACCEPT_QUEUE_SIZE 100
 
-static gpr_once s_init_max_accept_queue_size;
+static gpr_once s_init_max_accept_queue_size = GPR_ONCE_INIT;
 static int s_max_accept_queue_size;
 
 /* one listening port */
@@ -269,7 +269,8 @@ static void tcp_server_destroy(grpc_exec_ctx *exec_ctx, grpc_tcp_server *s) {
 
 /* get max listen queue size on linux */
 static void init_max_accept_queue_size(void) {
-  int n = SOMAXCONN;
+  int n = GRPC_TCP_CONN_REQUEST_MAX;
+#ifdef GRPC_HAVE_PROCFS   
   char buf[64];
   FILE *fp = fopen("/proc/sys/net/core/somaxconn", "r");
   if (fp == NULL) {
@@ -285,6 +286,7 @@ static void init_max_accept_queue_size(void) {
     }
   }
   fclose(fp);
+#endif
   s_max_accept_queue_size = n;
 
   if (s_max_accept_queue_size < MIN_SAFE_ACCEPT_QUEUE_SIZE) {

@@ -80,7 +80,6 @@
 
 #define GRPC_SOCKLEN_TYPE socklen_t
 #define GRPC_SOCKLEN_MAX ((socklen_t)-1)
-
 /* Override this file with one for your platform if you need to redefine
    things.  */
 
@@ -134,6 +133,7 @@
 #define GPR_POSIX_SYNC 1
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
+#define GPR_LITTLE_ENDIAN 1
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -159,6 +159,7 @@
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_SUPPORT_CHANNELS_FROM_FD 1
+#define GPR_LITTLE_ENDIAN 1
 #elif defined(__linux__)
 #define GPR_POSIX_CRASH_HANDLER 1
 #define GPR_PLATFORM_STRING "linux"
@@ -185,6 +186,7 @@
 #define GPR_POSIX_SYNC 1
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
+#define GPR_LITTLE_ENDIAN 1
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -228,6 +230,7 @@
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_SUPPORT_CHANNELS_FROM_FD 1
+#define GPR_LITTLE_ENDIAN 1
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -251,6 +254,7 @@
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_SUPPORT_CHANNELS_FROM_FD 1
+#define GPR_LITTLE_ENDIAN 1
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
@@ -279,46 +283,36 @@
 #define GPR_POSIX_SYNC 1
 #define GPR_POSIX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
+#define GPR_LITTLE_ENDIAN 1
 #ifdef _LP64
 #define GPR_ARCH_64 1
 #else /* _LP64 */
 #define GPR_ARCH_32 1
 #endif /* _LP64 */
 #elif defined(__hpux)
+
 #define GPR_PLATFORM_STRING "HP-UX"
+#define GPR_HPUX 1
 #define GPR_CPU_HPUX 1
 #define GPR_GCC_ATOMIC 1
 #define GPR_GCC_TLS 1
 #define GPR_POSIX_LOG 1
-#define GPR_POSIX_MULTIPOLL_WITH_POLL 1
-#define GPR_POSIX_WAKEUP_FD 1
-#define GPR_POSIX_NO_SPECIAL_WAKEUP_FD 1
-#define GPR_POSIX_SOCKET 1
-#define GPR_POSIX_SOCKETADDR 1
-#define GPR_POSIX_SOCKETUTILS 1
 #define GPR_POSIX_ENV 1
-#define GPR_POSIX_FILE 1
 #define GPR_POSIX_TMPFILE 1
 #define GPR_POSIX_STRING 1
 #define GPR_POSIX_SUBPROCESS 1
 #define GPR_POSIX_SYNC 1
-#define GPR_POSIX_TIME 1
+#define GPR_HPUX_TIME 1
 #define GPR_GETPID_IN_UNISTD_H 1
 #define GPR_SUPPORT_CHANNELS_FROM_FD 1
-#define GPR_HAVE_UNIX_SOCKET 1
-#define GPR_HAVE_IP_PKTINFO 1
-#define GPR_HAVE_IPV6_RECVPKTINFO 1
-#define GRPC_SOCKLEN_T int
+#define GPR_GETPID_IN_UNISTD_H 1
 #define S_IFMT _S_IFMT
+#define GPR_BIG_ENDIAN 1
 #undef GRPC_SOCKLEN_TYPE
 #undef GRPC_SOCKLEN_MAX
 #define GRPC_SOCKLEN_TYPE int
 #define GRPC_SOCKLEN_MAX INT_MAX
-#ifdef _LP64
 #define GPR_ARCH_64 1
-#else /* _LP64 */
-#define GPR_ARCH_32 1
-#endif /* _LP64 */
 #else
 #error "Could not auto-detect platform"
 #endif
@@ -392,6 +386,12 @@ typedef unsigned __int64 uint64_t;
         defined(GPR_CUSTOM_TLS) !=                                            \
     1
 #error Must define exactly one of GPR_MSVC_TLS, GPR_GCC_TLS, GPR_PTHREAD_TLS, GPR_CUSTOM_TLS
+#endif
+
+#if defined(GPR_BIG_ENDIAN)     + \
+    defined(GPR_LITTLE_ENDIAN) != \
+    1
+#error Must define exactly one of GPR_BIG_ENDIAN, GPR_LITTLE_ENDIAN
 #endif
 
 /* maximum alignment needed for any type on this platform, rounded up to a
