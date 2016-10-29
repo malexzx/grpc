@@ -203,7 +203,7 @@ static void tcp_continue_read(grpc_exec_ctx *exec_ctx, grpc_tcp *tcp) {
 
   memset(&msg, 0, sizeof(msg));
   msg.msg_iov = iov;
-  msg.msg_iovlen = (grpc_socklen) tcp->iov_size;
+  msg.msg_iovlen = tcp->iov_size;
 
   GPR_TIMER_BEGIN("recvmsg", 0);
   do {
@@ -313,7 +313,7 @@ static bool tcp_flush(grpc_tcp *tcp, grpc_error **error) {
     
     memset(&msg, 0, sizeof(msg));
     msg.msg_iov = iov;
-    msg.msg_iovlen = (grpc_socklen)iov_size;
+    msg.msg_iovlen = iov_size;
 
     GPR_TIMER_BEGIN("sendmsg", 1);
     do {
