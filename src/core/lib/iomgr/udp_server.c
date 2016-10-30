@@ -257,6 +257,7 @@ static int prepare_socket(int fd, const grpc_resolved_address *addr) {
                   &len) < 0) {
     goto error;
   }
+  sockname_temp.len = len;
 
   if (grpc_set_socket_sndbuf(fd, buffer_size_bytes) != GRPC_ERROR_NONE) {
     gpr_log(GPR_ERROR, "Failed to set send buffer size to %d bytes",
@@ -365,6 +366,7 @@ int grpc_udp_server_add_port(grpc_udp_server *s,
       grpc_socklen len = sizeof(struct sockaddr_storage);
       if (0 == getsockname(sp->fd, (struct sockaddr *)sockname_temp.addr,
                            &len)) {
+        sockname_temp.len = len;
         port = grpc_sockaddr_get_port(&sockname_temp);
         if (port > 0) {
           allocated_addr = gpr_malloc(sizeof(grpc_resolved_address));

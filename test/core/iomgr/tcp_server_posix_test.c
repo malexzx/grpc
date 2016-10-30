@@ -302,7 +302,8 @@ static void test_connect(unsigned n) {
   }
 
   grpc_tcp_server_start(&exec_ctx, s, &g_pollset, 1, on_connect, NULL);
-
+  resolved_addr.len = sizeof(struct sockaddr_storage);
+  resolved_addr1.len = sizeof(struct sockaddr_storage);
   for (i = 0; i < n; i++) {
     on_connect_result result;
     int svr_fd;

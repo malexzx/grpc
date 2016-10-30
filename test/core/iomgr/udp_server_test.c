@@ -171,7 +171,8 @@ static void test_receive(int number_of_clients) {
   GPR_ASSERT(svrfd >= 0);
   GPR_ASSERT(getsockname(svrfd, (struct sockaddr *)addr,
                          &len) == 0);
-  GPR_ASSERT(resolved_addr.len <= sizeof(struct sockaddr_storage));
+
+  GPR_ASSERT(len <= sizeof(struct sockaddr_storage));
 
   pollsets[0] = g_pollset;
   grpc_udp_server_start(&exec_ctx, s, pollsets, 1, NULL);

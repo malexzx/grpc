@@ -363,6 +363,7 @@ static grpc_error *prepare_socket(int fd, const grpc_resolved_address *addr,
     err = GRPC_OS_ERROR(errno, "getsockname");
     goto error;
   }
+  sockname_temp.len = len;
 
   *port = grpc_sockaddr_get_port(&sockname_temp);
   return GRPC_ERROR_NONE;
@@ -582,6 +583,7 @@ grpc_error *grpc_tcp_server_add_port(grpc_tcp_server *s,
       grpc_socklen len = sizeof(struct sockaddr_storage);
       if (0 == getsockname(sp->fd, (struct sockaddr *)sockname_temp.addr,
                            &len)) {
+        sockname_temp.len = len;
         port = grpc_sockaddr_get_port(&sockname_temp);
         if (port > 0) {
           allocated_addr = gpr_malloc(sizeof(grpc_resolved_address));

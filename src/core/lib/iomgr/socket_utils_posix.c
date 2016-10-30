@@ -51,6 +51,7 @@ int grpc_accept4(int sockfd, grpc_resolved_address *resolved_addr, int nonblock,
   GPR_ASSERT(resolved_addr->len <= GRPC_SOCKLEN_MAX);
   grpc_socklen len = (grpc_socklen)resolved_addr->len;
   fd = accept(sockfd, (struct sockaddr *)resolved_addr->addr, &len);
+  resolved_addr->len = len;
   if (fd >= 0) {
     if (nonblock) {
       flags = fcntl(fd, F_GETFL, 0);
