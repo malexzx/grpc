@@ -254,8 +254,8 @@ static void test_connect(unsigned n) {
   gpr_log(GPR_INFO, "clients=%d", n);
   memset(&resolved_addr, 0, sizeof(resolved_addr));
   memset(&resolved_addr1, 0, sizeof(resolved_addr1));
-  resolved_addr.len = sizeof(struct sockaddr_storage);
-  resolved_addr1.len = sizeof(struct sockaddr_storage);
+  grpc_socklen len = sizeof(struct sockaddr_storage);
+  grpc_socklen len1 = sizeof(struct sockaddr_storage);
   addr->ss_family = addr1->ss_family = AF_INET;
   GPR_ASSERT(GRPC_ERROR_NONE ==
              grpc_tcp_server_add_port(s, &resolved_addr, &svr_port));
@@ -287,8 +287,8 @@ static void test_connect(unsigned n) {
     GPR_ASSERT(fd >= 0);
     if (i == 0) {
       GPR_ASSERT(getsockname(fd, (struct sockaddr *)addr,
-                             (grpc_socklen *)&resolved_addr.len) == 0);
-      GPR_ASSERT(resolved_addr.len <= sizeof(*addr));
+                             &len) == 0);
+      GPR_ASSERT(len <= sizeof(*addr));
     }
   }
   for (i = 0; i < svr1_fd_count; ++i) {
@@ -296,8 +296,8 @@ static void test_connect(unsigned n) {
     GPR_ASSERT(fd >= 0);
     if (i == 0) {
       GPR_ASSERT(getsockname(fd, (struct sockaddr *)addr1,
-                             (grpc_socklen *)&resolved_addr1.len) == 0);
-      GPR_ASSERT(resolved_addr1.len <= sizeof(*addr1));
+                             &len1) == 0);
+      GPR_ASSERT(len1 <= sizeof(*addr1));
     }
   }
 

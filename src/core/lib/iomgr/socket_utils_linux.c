@@ -50,8 +50,9 @@ int grpc_accept4(int sockfd, grpc_resolved_address *resolved_addr, int nonblock,
   GPR_ASSERT(resolved_addr->len <= GRPC_SOCKLEN_MAX);
   flags |= nonblock ? SOCK_NONBLOCK : 0;
   flags |= cloexec ? SOCK_CLOEXEC : 0;
+  grpc_socklen len = (grpc_socklen)resolved_addr->len;
   return accept4(sockfd, (struct sockaddr *)resolved_addr->addr,
-                 (grpc_socklen *)&resolved_addr->len, flags);
+                 &len, flags);
 }
 
 #endif

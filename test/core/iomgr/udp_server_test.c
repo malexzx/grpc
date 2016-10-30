@@ -162,7 +162,7 @@ static void test_receive(int number_of_clients) {
   g_number_of_orphan_calls = 0;
 
   memset(&resolved_addr, 0, sizeof(resolved_addr));
-  resolved_addr.len = sizeof(struct sockaddr_storage);
+  grpc_socklen len = sizeof(struct sockaddr_storage);
   addr->ss_family = AF_INET;
   GPR_ASSERT(
       grpc_udp_server_add_port(s, &resolved_addr, on_read, on_fd_orphaned));
@@ -170,7 +170,7 @@ static void test_receive(int number_of_clients) {
   svrfd = grpc_udp_server_get_fd(s, 0);
   GPR_ASSERT(svrfd >= 0);
   GPR_ASSERT(getsockname(svrfd, (struct sockaddr *)addr,
-                         (grpc_socklen *)&resolved_addr.len) == 0);
+                         &len) == 0);
   GPR_ASSERT(resolved_addr.len <= sizeof(struct sockaddr_storage));
 
   pollsets[0] = g_pollset;
