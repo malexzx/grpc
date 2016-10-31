@@ -72,19 +72,16 @@ void gpr_time_init(void) { gpr_precise_clock_init(); }
 
 static gpr_timespec now_impl(gpr_clock_type clock_type) {
   GPR_ASSERT(clock_type != GPR_TIMESPAN);
-  if (clock_type == GPR_CLOCK_PRECISE) {
-    gpr_timespec ret;
-    gpr_precise_clock_now(&ret);
-    return ret;
-  } else if (clock_type == GPR_CLOCK_REALTIME) {
+  if (clock_type == GPR_CLOCK_REALTIME) {
     struct timespec now;
     clock_gettime(CLOCK_REALTIME, &now);
     return gpr_from_timespec(now, clock_type);
-  } 
-  GPR_ASSERT(clock_type == GPR_CLOCK_MONOTONIC);
+  }
+  double usec = (double) gethrtime();
   gpr_timespec ret;
-  gpr_precise_clock_now(&ret);
   ret.clock_type = clock_type;
+  ret.tv_sec = (int64_t)(usec / 1e9);
+  ret.tv_nsec = (int32_t)(usec - (double) clk->tv_sec * 1e9);
   return ret;
 }
 

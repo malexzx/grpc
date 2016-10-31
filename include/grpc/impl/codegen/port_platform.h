@@ -401,6 +401,23 @@ typedef unsigned __int64 uint64_t;
 #error Must define exactly one of GPR_BIG_ENDIAN, GPR_LITTLE_ENDIAN
 #endif
 
+#ifdef GPR_BIG_ENDIAN
+ #if defined(__GNUC__) && (__GNUC__>4 || (__GNUC__==4 && __GNUC_MINOR__>=3))
+  #define GRP_WORD_TO_NATIVE(N, W32)   N = __builtin_bswap32(W32)
+ #else
+  #define GRP_WORD_TO_NATIVE(N, W32)   \
+    N = ((((W32) & 0x000000FF) << 24)  | \
+      (((W32) & 0x0000FF00) <<  8)     | \
+      (((W32) & 0x00FF0000) >>  8)     | \
+      (((W32) & 0xFF000000) >> 24))
+ #endif
+#endif
+
+#ifdef GPR_LITTLE_ENDIAN
+  #define GRP_WORD_TO_NATIVE(N, W32)
+#endif
+
+
 /* maximum alignment needed for any type on this platform, rounded up to a
    power of two */
 #define GPR_MAX_ALIGNMENT 16
