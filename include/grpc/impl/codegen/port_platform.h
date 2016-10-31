@@ -78,8 +78,6 @@
 #endif /* defined(_WIN64) || defined(WIN64) || defined(_WIN32) || \
           defined(WIN32) */
 
-#define GRPC_SOCKLEN_TYPE socklen_t
-#define GRPC_SOCKLEN_MAX ((socklen_t)-1)
 /* Override this file with one for your platform if you need to redefine
    things.  */
 
@@ -313,9 +311,7 @@
 #define GPR_GETPID_IN_UNISTD_H 1
 #define S_IFMT _S_IFMT
 #define GPR_BIG_ENDIAN 1
-#undef GRPC_SOCKLEN_TYPE
-#undef GRPC_SOCKLEN_MAX
-#define GRPC_SOCKLEN_TYPE int
+#define grpc_socklen int
 #define GRPC_SOCKLEN_MAX INT_MAX
 #define GPR_ARCH_64 1
 #define GPR_INET_NTOP_SIZE size_t
@@ -444,6 +440,13 @@ typedef unsigned __int64 uint64_t;
 #define CENSUSAPI GRPCAPI
 #endif
 
-#define grpc_socklen GRPC_SOCKLEN_TYPE
+#ifndef grpc_socklen
+#define grpc_socklen socklen_t
+#define GRPC_SOCKLEN_MAX ((socklen_t)-1)
+#endif
+
+#ifndef GPR_INET_NTOP_SIZE
+#define GPR_INET_NTOP_SIZE socklen_t
+#endif
 
 #endif /* GRPC_IMPL_CODEGEN_PORT_PLATFORM_H */
