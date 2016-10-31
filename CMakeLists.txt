@@ -1076,6 +1076,7 @@ add_library(grpc++
   src/cpp/server/server_context.cc
   src/cpp/server/server_credentials.cc
   src/cpp/server/server_posix.cc
+  src/cpp/thread_manager/thread_manager.cc
   src/cpp/util/byte_buffer_cc.cc
   src/cpp/util/slice_cc.cc
   src/cpp/util/status.cc
@@ -1241,6 +1242,7 @@ add_library(grpc++_cronet
   src/cpp/server/server_context.cc
   src/cpp/server/server_credentials.cc
   src/cpp/server/server_posix.cc
+  src/cpp/thread_manager/thread_manager.cc
   src/cpp/util/byte_buffer_cc.cc
   src/cpp/util/slice_cc.cc
   src/cpp/util/status.cc
@@ -1497,6 +1499,7 @@ add_library(grpc++_unsecure
   src/cpp/server/server_context.cc
   src/cpp/server/server_credentials.cc
   src/cpp/server/server_posix.cc
+  src/cpp/thread_manager/thread_manager.cc
   src/cpp/util/byte_buffer_cc.cc
   src/cpp/util/slice_cc.cc
   src/cpp/util/status.cc
